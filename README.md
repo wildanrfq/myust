@@ -1,4 +1,4 @@
- # A rich and hybrid mystb.in API wrapper for Rust 🦀
+ # A rich and hybrid [mystb.in](https://mystb.in) API wrapper for Rust 🦀
  
 [![crates.io](https://img.shields.io/crates/v/myust.svg)](https://crates.io/crates/myust)
 [![Documentation](https://docs.rs/myust/badge.svg)](https://docs.rs/myust)
@@ -18,6 +18,10 @@
  It depends on your usecase, if you're not doing anything with anything users-related endpoints, use Client. It only wraps non-users endpoints.
  
  Otherwise, use AuthClient. It wraps both users and non-users endpoints. And the benefit of using AuthClient is mystb.in gives you more ratelimit credits for authorized requests.
+
+To use [AuthClient], you must have a mystb.in API
+token to authenticate you to the API. Log into [mystb.in](https://mystb.in) to get your own
+API token.
 
  ## Installation
 
