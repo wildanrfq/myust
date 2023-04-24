@@ -1,5 +1,5 @@
 pub(super) mod traits {
-    use crate::structs::Response;
+    use crate::structs::response::Response;
     use async_trait::async_trait;
     use serde_json::Value;
 

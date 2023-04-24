@@ -1,6 +1,11 @@
 use std::{collections::HashMap, ops::FnOnce};
 
-use super::{builders::*, structs::*, traits::traits::*, utils::utils::*};
+use super::{
+    builders::*,
+    structs::{response::Response, *},
+    traits::traits::*,
+    utils::utils::*,
+};
 
 use reqwest::Method;
 use serde_json::{json, Value};

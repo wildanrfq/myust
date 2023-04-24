@@ -104,7 +104,7 @@
 //! }
 //! ```
 //!
-//! You can check for another example snippets in [the test file](tests/test.rs).
+//! You can check for another example snippets in [the test file](https://github.com/danrfq/myust/blob/main/tests/test.rs).
 //!
 //! ## Help & Contributing
 //!
