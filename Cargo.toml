@@ -1,0 +1,17 @@
+[package]
+name = "myust"
+version = "0.1.0"
+edition = "2021"
+authors = ["wildanrfq <wildanrfqi@gmail.com>"]
+license = "MIT"
+documentation = "https://docs.rs/myust"
+repository = "https://github.com/danrfq/myust"
+description = "A rich and hybrid mystb.in API wrapper for Rust 🦀"
+
+[dependencies]
+async-trait = "0.1.68"
+chrono = "0.4.24"
+reqwest = { version = "0.11.16", features = ["blocking", "json"] }
+serde = { version = "1.0.160", features = ["derive"] }
+serde_json = "1.0.96"
+tokio = { version = "1.27.0", features = ["macros"] }
