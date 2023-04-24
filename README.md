@@ -15,15 +15,9 @@
  
  ## Which one do I use?
  
- It depends on your usecase,
- if you're not doing anything with anything users-related
- endpoints, use Client. It only wraps
- non-users endpoints.
+ It depends on your usecase, if you're not doing anything with anything users-related endpoints, use Client. It only wraps non-users endpoints.
  
- Otherwise, use AuthClient. It wraps both users
- and non-users endpoints.
- And the benefit of using AuthClient is mystb.in
- gives you more ratelimit credits for authorized requests.
+ Otherwise, use AuthClient. It wraps both users and non-users endpoints. And the benefit of using AuthClient is mystb.in gives you more ratelimit credits for authorized requests.
 
  ## Installation
 
@@ -105,6 +99,6 @@ async fn main() {
 
 You can check for another example snippets in [the test file](tests/test.rs).
 
-## Help
+## Help & Contributing
 
-If you need any help regarding `myust`, feel free to open an issue about your problem.
+If you need any help regarding `myust`, feel free to open an issue about your problem, and feel free to make a pull request for bugfix, code improvements, etc.
