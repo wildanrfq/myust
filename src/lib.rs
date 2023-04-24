@@ -101,9 +101,9 @@
 //!
 //! You can check for another example snippets in [the test file](tests/test.rs).
 //!
-//! ## Help
+//! ## Help & Contributing
 //!
-//! If you need any help regarding `myust`, feel free to open an issue about your problem.
+//! If you need any help regarding `myust`, feel free to open an issue about your problem, and feel free to make a pull request for bugfix, code improvements, etc.
 
 mod async_impl;
 mod builders;
