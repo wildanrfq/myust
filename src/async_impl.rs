@@ -3,7 +3,7 @@ use std::{collections::HashMap, ops::FnOnce};
 use super::{builders::*, structs::*, traits::traits::*, utils::utils::*};
 
 use async_trait::async_trait;
-use reqwest::{Method, Response};
+use reqwest::Method;
 use serde_json::{json, Value};
 
 /// An authenticated client to interact with the API.
@@ -33,13 +33,20 @@ impl AuthClient {
             ("PUT", Method::PUT),
             ("DELETE", Method::DELETE),
         ]);
-        self.inner
+        let response = self
+            .inner
             .request(methods[method].clone(), url.clone())
             .header("Authorization", self.token.clone())
             .json(&json)
             .send()
             .await
-            .unwrap()
+            .unwrap();
+        let status_code = response.status().as_u16();
+        let json_value = response.json::<Value>().await.ok();
+        Response {
+            json: json_value,
+            status_code: status_code,
+        }
     }
 
     /// Instantiate a new authenticated Client.
@@ -68,11 +75,7 @@ impl AuthClient {
             ..Default::default()
         };
         let data = paste(&mut builder);
-        let expires = if data.expires.is_some() {
-            Some(data.expires.unwrap().to_rfc3339())
-        } else {
-            None
-        };
+        let expires = data.expires.map(|dt| dt.to_rfc3339());
         let files = vec![File {
             filename: data.filename.to_string(),
             content: data.content.to_string(),
@@ -84,9 +87,9 @@ impl AuthClient {
         });
         let response = self.request_create_paste(json).await;
 
-        match response.status().as_u16() {
+        match response.status_code {
             200 | 201 | 204 => {
-                let paste_result = response.json::<Value>().await.unwrap();
+                let paste_result = response.json.unwrap();
                 Ok(Paste {
                     created_at: parse_date(paste_result["created_at"].as_str().unwrap()),
                     expires: data.expires,
@@ -111,19 +114,15 @@ impl AuthClient {
     {
         let mut builder = PastesBuilder::default();
         let data = &pastes(&mut builder).files;
-        let expires = if data[0].expires.is_some() {
-            Some(data[0].expires.unwrap().to_rfc3339())
-        } else {
-            None
-        };
-        let mut files = vec![];
+        let expires = data[0].expires.map(|dt| dt.to_rfc3339());
         let first_paste = &data[0];
-        for file in data {
-            files.push(File {
+        let files = data
+            .iter()
+            .map(|file| File {
                 filename: file.filename.clone(),
                 content: file.content.clone(),
             })
-        }
+            .collect();
         let json = json!({
             "files": files,
             "password": first_paste.password,
@@ -131,9 +130,9 @@ impl AuthClient {
         });
         let response = self.request_create_paste(json).await;
 
-        match response.status().as_u16() {
+        match response.status_code {
             200 | 201 | 204 => {
-                let paste_result = response.json::<Value>().await.unwrap();
+                let paste_result = response.json.unwrap();
                 Ok(Paste {
                     created_at: parse_date(paste_result["created_at"].as_str().unwrap()),
                     expires: first_paste.expires,
@@ -160,9 +159,9 @@ impl AuthClient {
             "password": data.password
         });
         let response = self.request_get_paste(json).await;
-        match response.status().as_u16() {
+        match response.status_code {
             200 => {
-                let paste_result = response.json::<Value>().await.unwrap();
+                let paste_result = response.json.unwrap();
                 let expires = if !paste_result["expires"].is_null() {
                     Some(parse_date(paste_result["expires"].as_str().unwrap()))
                 } else {
@@ -194,14 +193,14 @@ impl AuthClient {
     /// Delete a paste.
     pub async fn delete_paste(&self, paste_id: &str) -> Result<DeleteResult, MystbinError> {
         let response = self.request_delete_paste(paste_id).await;
-        match response.status().as_u16() {
+        match response.status_code {
             200 => Ok(DeleteResult {
                 succeeded: Some(vec![paste_id.to_string()]),
                 ..Default::default()
             }),
             _ => {
                 return Err(MystbinError {
-                    code: response.status().as_u16(),
+                    code: response.status_code,
                 });
             }
         }
@@ -211,9 +210,9 @@ impl AuthClient {
     pub async fn delete_pastes(&self, paste_ids: Vec<&str>) -> Result<DeleteResult, MystbinError> {
         let json = json!({ "pastes": paste_ids });
         let response = self.request_delete_pastes(json).await;
-        match response.status().as_u16() {
+        match response.status_code {
             200 => {
-                let data = response.json::<Value>().await.unwrap();
+                let data = response.json.unwrap();
                 Ok(DeleteResult {
                     succeeded: Some(
                         data["succeeded"]
@@ -234,7 +233,7 @@ impl AuthClient {
                 })
             }
             _ => Err(MystbinError {
-                code: response.status().as_u16(),
+                code: response.status_code,
                 ..Default::default()
             }),
         }
@@ -252,26 +251,26 @@ impl AuthClient {
             "page": data.page
         });
         let response = self.request_get_user_pastes(json).await;
-        match response.status().as_u16() {
+        match response.status_code {
             200 => {
-                let mut pastes = vec![];
-                let results = response.json::<Value>().await.unwrap();
-                for result in results["pastes"].as_array().unwrap() {
-                    let expires = if !result["expires"].is_null() {
-                        Some(parse_date(result["expires"].as_str().unwrap()))
-                    } else {
-                        None
-                    };
-                    pastes.push(UserPaste {
-                        created_at: parse_date(result["created_at"].as_str().unwrap()),
-                        expires: expires,
-                        id: result["id"].as_str().unwrap().to_string(),
+                let results = response.json.unwrap();
+                let pastes = results["pastes"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|result| {
+                        let expires = result["expires"].as_str().map(parse_date);
+                        UserPaste {
+                            created_at: parse_date(result["created_at"].as_str().unwrap()),
+                            expires: expires,
+                            id: result["id"].as_str().unwrap().to_string(),
+                        }
                     })
-                }
+                    .collect();
                 Ok(pastes)
             }
             _ => Err(MystbinError {
-                code: response.status().as_u16(),
+                code: response.status_code,
                 ..Default::default()
             }),
         }
@@ -281,10 +280,10 @@ impl AuthClient {
     pub async fn create_bookmark(&self, paste_id: &str) -> Result<(), MystbinError> {
         let json = json!({ "paste_id": paste_id });
         let response = self.request_create_bookmark(json).await;
-        match response.status().as_u16() {
+        match response.status_code {
             201 => Ok(()),
             _ => Err(MystbinError {
-                code: response.status().as_u16(),
+                code: response.status_code,
                 ..Default::default()
             }),
         }
@@ -294,10 +293,10 @@ impl AuthClient {
     pub async fn delete_bookmark(&self, paste_id: &str) -> Result<(), MystbinError> {
         let json = json!({ "paste_id": paste_id });
         let response = self.request_delete_bookmark(json).await;
-        match response.status().as_u16() {
+        match response.status_code {
             204 => Ok(()),
             _ => Err(MystbinError {
-                code: response.status().as_u16(),
+                code: response.status_code,
                 ..Default::default()
             }),
         }
@@ -306,26 +305,26 @@ impl AuthClient {
     /// Get the authenticated user's bookmarks.
     pub async fn get_user_bookmarks(&self) -> Result<Vec<UserPaste>, MystbinError> {
         let response = self.request_get_user_bookmarks().await;
-        match response.status().as_u16() {
+        match response.status_code {
             200 => {
-                let data = response.json::<Value>().await.unwrap();
-                let mut bookmarks = vec![];
-                for paste in data["bookmarks"].as_array().unwrap() {
-                    let expires = if !paste["expires"].is_null() {
-                        Some(parse_date(paste["expires"].as_str().unwrap()))
-                    } else {
-                        None
-                    };
-                    bookmarks.push(UserPaste {
-                        created_at: parse_date(paste["created_at"].as_str().unwrap()),
-                        expires: expires,
-                        id: paste["id"].as_str().unwrap().to_string(),
+                let data = response.json.unwrap();
+                let bookmarks = data["bookmarks"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|paste| {
+                        let expires = paste["expires"].as_str().map(parse_date);
+                        UserPaste {
+                            created_at: parse_date(paste["created_at"].as_str().unwrap()),
+                            expires: expires,
+                            id: paste["id"].as_str().unwrap().to_string(),
+                        }
                     })
-                }
+                    .collect();
                 Ok(bookmarks)
             }
             _ => Err(MystbinError {
-                code: response.status().as_u16(),
+                code: response.status_code,
                 ..Default::default()
             }),
         }
@@ -397,12 +396,19 @@ impl Client {
             ("PUT", Method::PUT),
             ("DELETE", Method::DELETE),
         ]);
-        self.inner
+        let response = self
+            .inner
             .request(methods[method].clone(), url.clone())
             .json(&json)
             .send()
             .await
-            .unwrap()
+            .unwrap();
+        let status_code = response.status().as_u16();
+        let json_value = response.json::<Value>().await.ok();
+        Response {
+            json: json_value,
+            status_code: status_code,
+        }
     }
 
     /// Create a paste.
@@ -414,11 +420,7 @@ impl Client {
             ..Default::default()
         };
         let data = paste(&mut builder);
-        let expires = if data.expires.is_some() {
-            Some(data.expires.unwrap().to_rfc3339())
-        } else {
-            None
-        };
+        let expires = data.expires.map(|dt| dt.to_rfc3339());
         let files = vec![File {
             filename: data.filename.to_string(),
             content: data.content.to_string(),
@@ -430,9 +432,9 @@ impl Client {
         });
         let response = self.request_create_paste(json).await;
 
-        match response.status().as_u16() {
+        match response.status_code {
             200 | 201 | 204 => {
-                let paste_result = response.json::<Value>().await.unwrap();
+                let paste_result = response.json.unwrap();
                 Ok(Paste {
                     created_at: parse_date(paste_result["created_at"].as_str().unwrap()),
                     expires: data.expires,
@@ -457,19 +459,16 @@ impl Client {
     {
         let mut builder = PastesBuilder::default();
         let data = &pastes(&mut builder).files;
-        let expires = if data[0].expires.is_some() {
-            Some(data[0].expires.unwrap().to_rfc3339())
-        } else {
-            None
-        };
-        let mut files = vec![];
+        let expires = data[0].expires.map(|dt| dt.to_rfc3339());
         let first_paste = &data[0];
-        for file in data {
-            files.push(File {
+        let files = data
+            .iter()
+            .map(|file| File {
                 filename: file.filename.clone(),
                 content: file.content.clone(),
             })
-        }
+            .collect();
+
         let json = json!({
             "files": files,
             "password": first_paste.password,
@@ -477,9 +476,9 @@ impl Client {
         });
         let response = self.request_create_paste(json).await;
 
-        match response.status().as_u16() {
+        match response.status_code {
             200 | 201 | 204 => {
-                let paste_result = response.json::<Value>().await.unwrap();
+                let paste_result = response.json.unwrap();
                 Ok(Paste {
                     created_at: parse_date(paste_result["created_at"].as_str().unwrap()),
                     expires: first_paste.expires,
@@ -506,9 +505,9 @@ impl Client {
             "password": data.password
         });
         let response = self.request_get_paste(json).await;
-        match response.status().as_u16() {
+        match response.status_code {
             200 => {
-                let paste_result = response.json::<Value>().await.unwrap();
+                let paste_result = response.json.unwrap();
                 let expires = if !paste_result["expires"].is_null() {
                     Some(parse_date(paste_result["expires"].as_str().unwrap()))
                 } else {

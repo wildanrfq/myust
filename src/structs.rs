@@ -2,6 +2,14 @@ use std::process::Termination;
 
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
+/// A custom response struct.
+#[derive(Debug)]
+pub struct Response {
+    pub json: Option<Value>,
+    pub status_code: u16,
+}
 
 /// An error received from the API.
 #[derive(Debug, Default)]
