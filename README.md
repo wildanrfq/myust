@@ -1,24 +1,28 @@
  # A rich and hybrid mystb.in API wrapper for Rust 🦀
  
+[![crates.io](https://img.shields.io/crates/v/myust.svg)](https://crates.io/crates/myust)
+[![Documentation](https://docs.rs/myust/badge.svg)](https://docs.rs/myust)
+[![MIT](https://img.shields.io/crates/l/myust.svg)](./LICENSE)
+
  ## Introduction
 
  `myust` is a rich and hybrid Rust wrapper for the mystb.in API that aims for user-flexibility.
  
  `myust` supports hybrid clients:
 
- - Asynchronous: [`Client`] and [`AuthClient`].
- - Synchronous: [`SyncClient`] and [`SyncAuthClient`].
+ - Asynchronous: Client and AuthClient.
+ - Synchronous: SyncClient and SyncAuthClient.
  
  ## Which one do I use?
  
  It depends on your usecase,
  if you're not doing anything with anything users-related
- endpoints, use [`Client`]. It only wraps
+ endpoints, use Client. It only wraps
  non-users endpoints.
  
- Otherwise, use [`AuthClient`]. It wraps both users
+ Otherwise, use AuthClient. It wraps both users
  and non-users endpoints.
- And the benefit of using [`AuthClient`] is mystb.in
+ And the benefit of using AuthClient is mystb.in
  gives you more ratelimit credits for authorized requests.
 
  ## Installation
@@ -99,7 +103,7 @@ async fn main() {
 }
 ```
 
-You can check for another example snippets in [the test file](https://github.com/danrfq/myust/blob/main/tests/test.rs).
+You can check for another example snippets in [the test file](tests/test.rs).
 
 ## Help
 

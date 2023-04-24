@@ -1,6 +1,6 @@
 use std::{collections::HashMap, ops::FnOnce};
 
-use super::{builders::*, structs::*, traits::traits::*, utils::*};
+use super::{builders::*, structs::*, traits::traits::*, utils::utils::*};
 
 use reqwest::{blocking::Response, Method};
 use serde_json::{json, Value};
@@ -25,6 +25,20 @@ impl SyncAuthClient {
             .as_u16()
     }
 
+    fn request(&self, method: &str, url: String, json: Value) -> Response {
+        let methods = HashMap::from([
+            ("GET", Method::GET),
+            ("PUT", Method::PUT),
+            ("DELETE", Method::DELETE),
+        ]);
+        self.inner
+            .request(methods[method].clone(), url.clone())
+            .header("Authorization", self.token.clone())
+            .json(&json)
+            .send()
+            .unwrap()
+    }
+    
     /// Instantiate a new authenticated Client.
     ///
     /// Login to <https://mystb.in> to get your API token.
@@ -40,20 +54,6 @@ impl SyncAuthClient {
             },
             _ => panic!("The provided token is invalid."),
         }
-    }
-
-    fn request(&self, method: &str, url: String, json: Value) -> Response {
-        let methods = HashMap::from([
-            ("GET", Method::GET),
-            ("PUT", Method::PUT),
-            ("DELETE", Method::DELETE),
-        ]);
-        self.inner
-            .request(methods[method].clone(), url.clone())
-            .header("Authorization", self.token.clone())
-            .json(&json)
-            .send()
-            .unwrap()
     }
 
     /// Create a paste.

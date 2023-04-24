@@ -1,6 +1,6 @@
 use std::{collections::HashMap, ops::FnOnce};
 
-use super::{builders::*, structs::*, traits::traits::*, utils::*};
+use super::{builders::*, structs::*, traits::traits::*, utils::utils::*};
 
 use async_trait::async_trait;
 use reqwest::{Method, Response};

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, ops::FnOnce};
 
-use super::{builders::*, structs::*, traits::traits::*, utils::*};
+use super::{builders::*, structs::*, traits::traits::*, utils::utils::*};
 
 use async_trait::async_trait;
 use reqwest::{Method, Response};
@@ -27,6 +27,21 @@ impl AuthClient {
             .as_u16()
     }
 
+    async fn request(&self, method: &str, url: String, json: Value) -> Response {
+        let methods = HashMap::from([
+            ("GET", Method::GET),
+            ("PUT", Method::PUT),
+            ("DELETE", Method::DELETE),
+        ]);
+        self.inner
+            .request(methods[method].clone(), url.clone())
+            .header("Authorization", self.token.clone())
+            .json(&json)
+            .send()
+            .await
+            .unwrap()
+    }
+    
     /// Instantiate a new authenticated Client.
     ///
     /// Login to <https://mystb.in> to get your API token.
@@ -42,21 +57,6 @@ impl AuthClient {
             },
             _ => panic!("The provided token is invalid."),
         }
-    }
-
-    async fn request(&self, method: &str, url: String, json: Value) -> Response {
-        let methods = HashMap::from([
-            ("GET", Method::GET),
-            ("PUT", Method::PUT),
-            ("DELETE", Method::DELETE),
-        ]);
-        self.inner
-            .request(methods[method].clone(), url.clone())
-            .header("Authorization", self.token.clone())
-            .json(&json)
-            .send()
-            .await
-            .unwrap()
     }
 
     /// Create a paste.
