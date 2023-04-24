@@ -18,7 +18,7 @@ pub struct AuthClient {
 impl AuthClient {
     async fn check_token(client: reqwest::Client, token: &str) -> u16 {
         client
-            .get(ENDPOINT_URL.to_string() + "/users/@me")
+            .get(SELF_ENDPOINT)
             .header("Authorization", format!("Bearer {}", token))
             .send()
             .await
@@ -27,7 +27,7 @@ impl AuthClient {
             .as_u16()
     }
 
-    async fn request(&self, method: &str, url: String, json: Value) -> Response {
+    async fn request(&self, method: &str, url: &str, json: Value) -> Response {
         let methods = HashMap::from([
             ("GET", Method::GET),
             ("PUT", Method::PUT),
@@ -41,11 +41,11 @@ impl AuthClient {
             .await
             .unwrap()
     }
-    
+
     /// Instantiate a new authenticated Client.
     ///
     /// Login to <https://mystb.in> to get your API token.
-    /// 
+    ///
     /// Panics if the provided token is invalid.
     pub async fn new(token: &str) -> Self {
         let client = reqwest::Client::new();
@@ -335,58 +335,42 @@ impl AuthClient {
 #[async_trait]
 impl AuthClientPaste for AuthClient {
     async fn request_create_paste(&self, json: Value) -> Response {
-        self.request("PUT", ENDPOINT_URL.to_string() + "/paste", json)
-            .await
+        self.request("PUT", PASTE_ENDPOINT, json).await
     }
 
     async fn request_delete_paste(&self, paste_id: &str) -> Response {
         self.request(
             "DELETE",
-            ENDPOINT_URL.to_string() + "/paste/" + paste_id,
+            &format!("{}/{}", PASTE_ENDPOINT, paste_id),
             json!({}),
         )
         .await
     }
 
     async fn request_delete_pastes(&self, json: Value) -> Response {
-        self.request("DELETE", ENDPOINT_URL.to_string() + "/paste", json)
-            .await
+        self.request("DELETE", PASTE_ENDPOINT, json).await
     }
 
     async fn request_get_paste(&self, json: Value) -> Response {
-        self.request("GET", ENDPOINT_URL.to_string() + "/paste", json)
-            .await
+        self.request("GET", PASTE_ENDPOINT, json).await
     }
 
     async fn request_get_user_pastes(&self, json: Value) -> Response {
-        self.request("GET", ENDPOINT_URL.to_string() + "/pastes/@me", json)
-            .await
+        self.request("GET", USER_PASTES_ENDPOINT, json).await
     }
 }
 
 #[async_trait]
 impl AuthClientBookmark for AuthClient {
     async fn request_create_bookmark(&self, json: Value) -> Response {
-        self.request("PUT", ENDPOINT_URL.to_string() + "/users/bookmarks", json)
-            .await
+        self.request("PUT", BOOKMARK_ENDPOINT, json).await
     }
 
     async fn request_delete_bookmark(&self, json: Value) -> Response {
-        self.request(
-            "DELETE",
-            ENDPOINT_URL.to_string() + "/users/bookmarks",
-            json,
-        )
-        .await
+        self.request("DELETE", BOOKMARK_ENDPOINT, json).await
     }
 
     async fn request_get_user_bookmarks(&self) -> Response {
-        self.request(
-            "GET",
-            ENDPOINT_URL.to_string() + "/users/bookmarks",
-            json!({}),
-        )
-        .await
+        self.request("GET", BOOKMARK_ENDPOINT, json!({})).await
     }
 }
-

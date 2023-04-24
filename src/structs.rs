@@ -1,4 +1,4 @@
-use std::{process::Termination};
+use std::process::Termination;
 
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
@@ -10,14 +10,14 @@ pub struct MystbinError {
 }
 
 /// The base file.
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct File {
     pub filename: String,
     pub content: String,
 }
 
 /// The base paste.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Paste {
     pub created_at: DateTime<FixedOffset>,
     pub expires: Option<DateTime<FixedOffset>>,
@@ -39,7 +39,7 @@ pub struct DeleteResult {
 }
 
 /// The base user paste. This does not contain the files from the paste.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct UserPaste {
     pub created_at: DateTime<FixedOffset>,
     pub expires: Option<DateTime<FixedOffset>>,

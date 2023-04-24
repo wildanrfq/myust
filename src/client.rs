@@ -22,7 +22,7 @@ impl Client {
         }
     }
 
-    async fn request(&self, method: &str, url: String, json: Value) -> Response {
+    async fn request(&self, method: &str, url: &str, json: Value) -> Response {
         let methods = HashMap::from([
             ("GET", Method::GET),
             ("PUT", Method::PUT),
@@ -172,12 +172,10 @@ impl Client {
 #[async_trait]
 impl ClientPaste for Client {
     async fn request_create_paste(&self, json: Value) -> Response {
-        self.request("PUT", ENDPOINT_URL.to_string() + "/paste", json)
-            .await
+        self.request("PUT", PASTE_ENDPOINT, json).await
     }
 
     async fn request_get_paste(&self, json: Value) -> Response {
-        self.request("GET", ENDPOINT_URL.to_string() + "/paste", json)
-            .await
+        self.request("GET", PASTE_ENDPOINT, json).await
     }
 }

@@ -1,6 +1,6 @@
 pub(super) mod traits {
     use async_trait::async_trait;
-    use reqwest::{Response, blocking::Response as BlockingResponse};
+    use reqwest::{blocking::Response as BlockingResponse, Response};
     use serde_json::Value;
 
     #[async_trait]

@@ -1,11 +1,11 @@
 //!  # A rich and hybrid mystb.in API wrapper for Rust 🦀
-//! 
+//!
 //!  ## Introduction
-//! 
+//!
 //!  `myust` is a rich and hybrid Rust wrapper for the mystb.in API that aims for user-flexibility.
 //!  
 //!  `myust` supports hybrid clients:
-//! 
+//!
 //!  - Asynchronous: [`Client`] and [`AuthClient`].
 //!  - Synchronous: [`SyncClient`] and [`SyncAuthClient`].
 //!  
@@ -20,24 +20,24 @@
 //!  and non-users endpoints.
 //!  And the benefit of using [`AuthClient`] is mystb.in
 //!  gives you more ratelimit credits for authorized requests.
-//! 
+//!
 //!  ## Installation
-//! 
+//!
 //!  Add `myust = "0.1"` to your `Cargo.toml` file.
-//! 
+//!
 //!  ```toml
 //!  [dependencies]
 //!  myust = "0.1"
 //!  tokio = "1.27.0"
 //!  ```
-//! 
+//!
 //!  ## Usage Examples
-//! 
+//!
 //!  Asynchronously creating a paste with tomorrow expiration date, with error handling:
 //!  ```rust
 //!  use chrono::{Days, Utc};
 //!  use myust::Client;
-//! 
+//!
 //! #[tokio::main]
 //! async fn main() {
 //!     let client = Client::new();
@@ -64,7 +64,7 @@
 //! Synchronously creating a multifile paste with a password:
 //! ```rust
 //! use myust::SyncClient;
-//! 
+//!
 //! fn main() {
 //!     let client = SyncClient::new();
 //!     let paste = client
@@ -81,11 +81,11 @@
 //!     println!("Result: {}", url)
 //! }
 //! ```
-//! 
+//!
 //! Asynchronously deleting a paste (you must own the paste):
 //! ```rust
 //! use myust::AuthClient;
-//! 
+//!
 //! #[tokio::main]
 //! async fn main() {
 //!     let client = AuthClient::new("YOUR_MYSTBIN_TOKEN").await;
@@ -98,11 +98,11 @@
 //!     }
 //! }
 //! ```
-//! 
+//!
 //! You can check for another example snippets in [the test file](tests/test.rs).
-//! 
+//!
 //! ## Help
-//! 
+//!
 //! If you need any help regarding `myust`, feel free to open an issue about your problem.
 
 mod auth_client;
@@ -112,7 +112,7 @@ mod structs;
 mod sync;
 mod traits;
 mod utils;
-pub use client::Client;
 pub use auth_client::AuthClient;
-pub use sync::{SyncClient, SyncAuthClient};
+pub use client::Client;
 pub use structs::*;
+pub use sync::{SyncAuthClient, SyncClient};

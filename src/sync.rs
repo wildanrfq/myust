@@ -17,7 +17,7 @@ pub struct SyncAuthClient {
 impl SyncAuthClient {
     fn check_token(client: reqwest::blocking::Client, token: &str) -> u16 {
         client
-            .get(ENDPOINT_URL.to_string() + "/users/@me")
+            .get(SELF_ENDPOINT)
             .header("Authorization", format!("Bearer {}", token))
             .send()
             .unwrap()
@@ -25,7 +25,7 @@ impl SyncAuthClient {
             .as_u16()
     }
 
-    fn request(&self, method: &str, url: String, json: Value) -> Response {
+    fn request(&self, method: &str, url: &str, json: Value) -> Response {
         let methods = HashMap::from([
             ("GET", Method::GET),
             ("PUT", Method::PUT),
@@ -38,7 +38,7 @@ impl SyncAuthClient {
             .send()
             .unwrap()
     }
-    
+
     /// Instantiate a new authenticated Client.
     ///
     /// Login to <https://mystb.in> to get your API token.
@@ -331,49 +331,41 @@ impl SyncAuthClient {
 
 impl SyncAuthClientPaste for SyncAuthClient {
     fn request_create_paste(&self, json: Value) -> Response {
-        self.request("PUT", ENDPOINT_URL.to_string() + "/paste", json)
+        self.request("PUT", PASTE_ENDPOINT, json)
     }
 
     fn request_delete_paste(&self, paste_id: &str) -> Response {
         self.request(
             "DELETE",
-            ENDPOINT_URL.to_string() + "/paste/" + paste_id,
+            &format!("{}/{}", PASTE_ENDPOINT, paste_id),
             json!({}),
         )
     }
 
     fn request_delete_pastes(&self, json: Value) -> Response {
-        self.request("DELETE", ENDPOINT_URL.to_string() + "/paste", json)
+        self.request("DELETE", PASTE_ENDPOINT, json)
     }
 
     fn request_get_paste(&self, json: Value) -> Response {
-        self.request("GET", ENDPOINT_URL.to_string() + "/paste", json)
+        self.request("GET", PASTE_ENDPOINT, json)
     }
 
     fn request_get_user_pastes(&self, json: Value) -> Response {
-        self.request("GET", ENDPOINT_URL.to_string() + "/pastes/@me", json)
+        self.request("GET", USER_PASTES_ENDPOINT, json)
     }
 }
 
 impl SyncAuthClientBookmark for SyncAuthClient {
     fn request_create_bookmark(&self, json: Value) -> Response {
-        self.request("PUT", ENDPOINT_URL.to_string() + "/users/bookmarks", json)
+        self.request("PUT", BOOKMARK_ENDPOINT, json)
     }
 
     fn request_delete_bookmark(&self, json: Value) -> Response {
-        self.request(
-            "DELETE",
-            ENDPOINT_URL.to_string() + "/users/bookmarks",
-            json,
-        )
+        self.request("DELETE", BOOKMARK_ENDPOINT, json)
     }
 
     fn request_get_user_bookmarks(&self) -> Response {
-        self.request(
-            "GET",
-            ENDPOINT_URL.to_string() + "/users/bookmarks",
-            json!({}),
-        )
+        self.request("GET", BOOKMARK_ENDPOINT, json!({}))
     }
 }
 
@@ -393,7 +385,7 @@ impl SyncClient {
         }
     }
 
-    fn request(&self, method: &str, url: String, json: Value) -> Response {
+    fn request(&self, method: &str, url: &str, json: Value) -> Response {
         let methods = HashMap::from([
             ("GET", Method::GET),
             ("PUT", Method::PUT),
@@ -541,10 +533,10 @@ impl SyncClient {
 
 impl SyncClientPaste for SyncClient {
     fn request_create_paste(&self, json: Value) -> Response {
-        self.request("PUT", ENDPOINT_URL.to_string() + "/paste", json)
+        self.request("PUT", PASTE_ENDPOINT, json)
     }
 
     fn request_get_paste(&self, json: Value) -> Response {
-        self.request("GET", ENDPOINT_URL.to_string() + "/paste", json)
+        self.request("GET", PASTE_ENDPOINT, json)
     }
 }
