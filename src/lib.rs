@@ -105,14 +105,12 @@
 //!
 //! If you need any help regarding `myust`, feel free to open an issue about your problem.
 
-mod auth_client;
+mod async_client;
 mod builders;
-mod client;
 mod structs;
-mod sync;
+mod sync_client;
 mod traits;
 mod utils;
-pub use auth_client::AuthClient;
-pub use client::Client;
+pub use async_client::{AuthClient, Client};
 pub use structs::*;
-pub use sync::{SyncAuthClient, SyncClient};
+pub use sync_client::{SyncAuthClient, SyncClient};
