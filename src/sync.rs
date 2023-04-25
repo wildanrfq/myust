@@ -103,7 +103,17 @@ impl SyncAuthClient {
                     id: paste_result["id"].as_str().unwrap().to_string(),
                 })
             }
-            status_code => Err(MystbinError { code: status_code }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 
@@ -143,7 +153,17 @@ impl SyncAuthClient {
                     id: paste_result["id"].as_str().unwrap().to_string(),
                 })
             }
-            status_code => Err(MystbinError { code: status_code }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 
@@ -179,7 +199,17 @@ impl SyncAuthClient {
                     id: data.id.clone(),
                 })
             }
-            status_code => Err(MystbinError { code: status_code }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 
@@ -191,9 +221,17 @@ impl SyncAuthClient {
                 succeeded: Some(vec![paste_id.to_string()]),
                 ..Default::default()
             }),
-            _ => Err(MystbinError {
-                code: response.status_code,
-            }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 
@@ -223,9 +261,17 @@ impl SyncAuthClient {
                     ),
                 })
             }
-            _ => Err(MystbinError {
-                code: response.status_code,
-            }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 
@@ -259,9 +305,17 @@ impl SyncAuthClient {
                     .collect();
                 Ok(pastes)
             }
-            _ => Err(MystbinError {
-                code: response.status_code,
-            }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 
@@ -271,9 +325,17 @@ impl SyncAuthClient {
         let response = self.request_create_bookmark(json);
         match response.status_code {
             201 => Ok(()),
-            _ => Err(MystbinError {
-                code: response.status_code,
-            }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 
@@ -283,9 +345,17 @@ impl SyncAuthClient {
         let response = self.request_delete_bookmark(json);
         match response.status_code {
             204 => Ok(()),
-            _ => Err(MystbinError {
-                code: response.status_code,
-            }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 
@@ -310,9 +380,17 @@ impl SyncAuthClient {
                     .collect();
                 Ok(bookmarks)
             }
-            _ => Err(MystbinError {
-                code: response.status_code,
-            }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 }
@@ -434,7 +512,17 @@ impl SyncClient {
                     id: paste_result["id"].as_str().unwrap().to_string(),
                 })
             }
-            status_code => Err(MystbinError { code: status_code }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 
@@ -475,7 +563,17 @@ impl SyncClient {
                     id: paste_result["id"].as_str().unwrap().to_string(),
                 })
             }
-            status_code => Err(MystbinError { code: status_code }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 
@@ -511,7 +609,17 @@ impl SyncClient {
                     id: data.id.clone(),
                 })
             }
-            status_code => Err(MystbinError { code: status_code }),
+            _ => {
+                let data = response.json.unwrap();
+                Err(MystbinError {
+                    code: response.status_code,
+                    error: data["error"].as_str().map(|s| s.to_string()),
+                    notice: data["notice"].as_str().map(|s| s.to_string()),
+                    detail: data["detail"]
+                        .as_object()
+                        .map(|m| m.clone().into_iter().collect()),
+                })
+            }
         }
     }
 }

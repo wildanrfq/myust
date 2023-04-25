@@ -1,14 +1,16 @@
-use std::process::Termination;
-
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 pub(super) mod response {
     use serde_json::Value;
 
     #[derive(Debug)]
+    /// Custom response to provide just useful data.
     pub struct MyustResponse {
+        /// The JSON output, if any.
         pub json: Option<Value>,
+        /// The status code.
         pub status_code: u16,
     }
 }
@@ -16,11 +18,18 @@ pub(super) mod response {
 /// An error received from the API.
 #[derive(Debug)]
 pub struct MystbinError {
+    /// The status code.
     pub code: u16,
+    /// The error message, if any.
+    pub error: Option<String>,
+    /// The notice message, if any.
+    pub notice: Option<String>,
+    /// The detail of the error, if any.
+    pub detail: Option<Value>,
 }
 
 /// The base file.
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct File {
     /// The file's name.
     pub filename: String,
@@ -29,7 +38,7 @@ pub struct File {
 }
 
 /// The base paste.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Paste {
     /// The paste's creation date.
     pub created_at: DateTime<FixedOffset>,
@@ -41,13 +50,7 @@ pub struct Paste {
     pub id: String,
 }
 
-impl Termination for Paste {
-    fn report(self) -> std::process::ExitCode {
-        todo!()
-    }
-}
-
-/// The result obtained from delete_paste and delete_paste functions.
+/// The result obtained from delete_paste and delete_pastes functions.
 #[derive(Debug, Default)]
 pub struct DeleteResult {
     /// The successfully deleted pastes.
@@ -57,7 +60,7 @@ pub struct DeleteResult {
 }
 
 /// The base user paste. This does not contain the files from the paste.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct UserPaste {
     /// The paste's creation date.
     pub created_at: DateTime<FixedOffset>,
@@ -65,10 +68,4 @@ pub struct UserPaste {
     pub expires: Option<DateTime<FixedOffset>>,
     /// The paste's ID.
     pub id: String,
-}
-
-impl Termination for UserPaste {
-    fn report(self) -> std::process::ExitCode {
-        todo!()
-    }
 }
