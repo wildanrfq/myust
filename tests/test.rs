@@ -2,12 +2,23 @@ use chrono::{Days, Utc};
 use myust::AuthClient;
 
 #[test]
-fn testsync() {
+#[cfg(feature = "sync")]
+fn createsync() {
     let client = myust::SyncClient::new();
     let paste = client
         .create_paste(|p| p.filename("syncmyust.txt").content("lol"))
         .unwrap();
     println!("{paste:#?}")
+}
+
+#[test]
+#[cfg(feature = "sync")]
+fn getsync() {
+    let client = myust::SyncClient::new();
+    let paste = client
+        .get_paste(|p| p.id("SpecificsBillionComponent").password("x"))
+        .unwrap();
+    println!("{paste:#?}");
 }
 
 #[tokio::test]
@@ -80,7 +91,7 @@ async fn create_pastes() {
 async fn get_paste() {
     let client = myust::Client::new();
     let paste = client
-        .get_paste(|p| p.id("InfraredYukonEmpty"))
+        .get_paste(|p| p.id("CalendarNightsCovering"))
         .await
         .unwrap();
     println!("{paste:#?}")
@@ -109,6 +120,7 @@ async fn add_bm() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn del_bm() {
     let client =  myust::AuthClient::new("eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTQ5MjI3MTg3NTN9.pmoHaFT3BBPAWUgQ5OUpYfx8fD3BkiO0cHfFHrk3dbpjyuHhIqfpwA3Bh5PXXickNAjmrb_fsBxkltYuy_EuVg").await;
     client.delete_bookmark("InfraredYukonEmpty").await.unwrap();

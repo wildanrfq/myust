@@ -12,6 +12,8 @@
 
  - Asynchronous: Client and AuthClient.
  - Synchronous: SyncClient and SyncAuthClient.
+
+ **⚠️ Synchronous clients are only available on the `sync` feature.**
  
  ## Which one do I use?
  
@@ -19,18 +21,25 @@
  
  Otherwise, use AuthClient. It wraps both users and non-users endpoints. And the benefit of using AuthClient is mystb.in gives you more ratelimit credits for authorized requests.
 
-To use [AuthClient], you must have a mystb.in API
+To use AuthClient, you must have a mystb.in API
 token to authenticate you to the API. Log into [mystb.in](https://mystb.in) to get your own
 API token.
 
  ## Installation
 
- Add `myust = "0.1"` to your `Cargo.toml` file.
+ Add `myust = "1.0"` to your `Cargo.toml` file.
 
  ```toml
  [dependencies]
- myust = "0.1"
+ myust = "1.0"
  tokio = "1.27.0"
+ ```
+
+ If you want to use synchronous clients, add the `sync` feature.
+
+ ```toml
+ [dependencies]
+ myust = { version = "0.1", features = ["sync"] }
  ```
 
  ## Usage Examples
@@ -63,7 +72,7 @@ async fn main() {
     }
 }
 ```
-Synchronously creating a multifile paste with a password:
+Synchronously creating a multifile paste with a password (you must have the `sync` feature enabled):
 ```rust
 use myust::SyncClient;
 

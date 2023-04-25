@@ -1,4 +1,7 @@
-//! A rich and hybrid [mystb.in](https://mystb.in) API wrapper for Rust 🦀
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![allow(clippy::needless_doctest_main, clippy::clone_double_ref)]
+
+//! A rich and hybrid [mystb.in] API wrapper for Rust 🦀
 //!
 //! ## Introduction
 //!
@@ -8,6 +11,8 @@
 //!
 //! - [`Client`] and [`AuthClient`] for asynchronous.
 //! - [`SyncClient`] and [`SyncAuthClient`] for synchronous.
+//!
+//! **⚠️ Synchronous clients are only available on the `sync` feature.**
 //!
 //! ## Which one do I use?
 //!
@@ -23,17 +28,24 @@
 //!
 //! To use [`AuthClient`], you must have a mystb.in API
 //! token to authenticate you to the API. Log into
-//! [mystb.in](https://mystb.in) to get your own
+//! [mystb.in] to get your own
 //! API token.
 //!
 //! ## Installation
 //!
-//! Add `myust = "0.1"` to your `Cargo.toml` file.
+//! Add `myust = "1.0"` to your `Cargo.toml` file.
 //!
 //! ```toml
 //! [dependencies]
-//! myust = "0.1"
+//! myust = "1.0"
 //! tokio = "1.27.0"
+//! ```
+//!
+//! If you want to use synchronous clients, add the `sync` feature.
+//!
+//! ```toml
+//! [dependencies]
+//! myust = { version = "0.1", features = ["sync"] }
 //! ```
 //!
 //! ## Usage Examples
@@ -66,7 +78,7 @@
 //!    }
 //! }
 //! ```
-//! Synchronously creating a multifile paste with a password:
+//! Synchronously creating a multifile paste with a password (you must have the [`sync`] feature enabled):
 //! ```rust
 //! use myust::SyncClient;
 //!
@@ -109,13 +121,17 @@
 //! ## Help & Contributing
 //!
 //! If you need any help regarding myust, feel free to open an issue about your problem, and feel free to make a pull request for bugfix, code improvements, etc.
-
-mod async_impl;
+//!
+//! [mystb.in]: https://mystb.in
+//!
+mod r#async;
 mod builders;
 mod structs;
-mod sync_impl;
 mod traits;
 mod utils;
-pub use async_impl::{AuthClient, Client};
+pub use r#async::{AuthClient, Client};
 pub use structs::*;
-pub use sync_impl::{SyncAuthClient, SyncClient};
+
+pub mod sync;
+#[cfg(feature = "sync")]
+pub use sync::{SyncAuthClient, SyncClient};

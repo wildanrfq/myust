@@ -69,8 +69,8 @@ impl PastesBuilder {
         paste: impl FnOnce(&mut PasteBuilder) -> &mut PasteBuilder,
     ) -> &mut Self {
         let mut builder = PasteBuilder::default();
-        let mut data = paste(&mut builder);
-        self.files.push(take(&mut data));
+        let data = paste(&mut builder);
+        self.files.push(take(data));
         self
     }
 }

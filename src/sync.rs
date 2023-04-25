@@ -1,38 +1,40 @@
+#![cfg_attr(docsrs, doc(cfg(feature = "sync")))]
+
+//! Synchronous implementation for clients.
+
 use std::{collections::HashMap, ops::FnOnce};
 
-use super::{
+use crate::{
     builders::*,
-    structs::{response::Response, *},
-    traits::traits::*,
-    utils::utils::*,
+    structs::{response::MyustResponse, *},
+    traits::*,
+    utils::*,
 };
 
-use async_trait::async_trait;
 use reqwest::Method;
 use serde_json::{json, Value};
 
-/// An authenticated client to interact with the API.
+/// A synchronous authenticated client to interact with the API.
 ///
 /// Use this if you're doing anything users-related.
 #[derive(Default)]
-pub struct AuthClient {
-    inner: reqwest::Client,
+pub struct SyncAuthClient {
+    inner: reqwest::blocking::Client,
     token: String,
 }
 
-impl AuthClient {
-    async fn check_token(client: reqwest::Client, token: &str) -> u16 {
+impl SyncAuthClient {
+    fn check_token(client: reqwest::blocking::Client, token: &str) -> u16 {
         client
             .get(SELF_ENDPOINT)
             .header("Authorization", format!("Bearer {}", token))
             .send()
-            .await
             .unwrap()
             .status()
             .as_u16()
     }
 
-    async fn request(&self, method: &str, url: &str, json: Value) -> Response {
+    fn request(&self, method: &str, url: &str, json: Value) -> MyustResponse {
         let methods = HashMap::from([
             ("GET", Method::GET),
             ("PUT", Method::PUT),
@@ -44,26 +46,25 @@ impl AuthClient {
             .header("Authorization", self.token.clone())
             .json(&json)
             .send()
-            .await
             .unwrap();
         let status_code = response.status().as_u16();
-        let json_value = response.json::<Value>().await.ok();
-        Response {
+        let json_value = response.json::<Value>().ok();
+        MyustResponse {
             json: json_value,
-            status_code: status_code,
+            status_code,
         }
     }
 
     /// Instantiate a new authenticated Client.
     ///
-    /// Login to <https://mystb.in> to get your API token.
+    /// Login to [mystb.in](https://mystb.in) to get your API token.
     ///
     /// Panics if the provided token is invalid.
-    pub async fn new(token: &str) -> Self {
-        let client = reqwest::Client::new();
-        let code = Self::check_token(client.clone(), token).await;
+    pub fn new(token: &str) -> Self {
+        let client = reqwest::blocking::Client::new();
+        let code = Self::check_token(client.clone(), token);
         match code {
-            200 => AuthClient {
+            200 => SyncAuthClient {
                 inner: client,
                 token: format!("Bearer {}", token),
             },
@@ -72,7 +73,7 @@ impl AuthClient {
     }
 
     /// Create a paste.
-    pub async fn create_paste<F>(&self, paste: F) -> Result<Paste, MystbinError>
+    pub fn create_paste<F>(&self, paste: F) -> Result<Paste, MystbinError>
     where
         F: FnOnce(&mut PasteBuilder) -> &mut PasteBuilder,
     {
@@ -90,7 +91,7 @@ impl AuthClient {
             "password": data.password,
             "expires": expires
         });
-        let response = self.request_create_paste(json).await;
+        let response = self.request_create_paste(json);
 
         match response.status_code {
             200 | 201 | 204 => {
@@ -98,14 +99,11 @@ impl AuthClient {
                 Ok(Paste {
                     created_at: parse_date(paste_result["created_at"].as_str().unwrap()),
                     expires: data.expires,
-                    files: files,
+                    files,
                     id: paste_result["id"].as_str().unwrap().to_string(),
                 })
             }
-            status_code => Err(MystbinError {
-                code: status_code,
-                ..Default::default()
-            }),
+            status_code => Err(MystbinError { code: status_code }),
         }
     }
 
@@ -113,7 +111,7 @@ impl AuthClient {
     ///
     /// If you want to provide `expires` or `password`,
     /// put it in the first file.
-    pub async fn create_multifile_paste<F>(&self, pastes: F) -> Result<Paste, MystbinError>
+    pub fn create_multifile_paste<F>(&self, pastes: F) -> Result<Paste, MystbinError>
     where
         F: FnOnce(&mut PastesBuilder) -> &mut PastesBuilder,
     {
@@ -133,7 +131,7 @@ impl AuthClient {
             "password": first_paste.password,
             "expires": expires
         });
-        let response = self.request_create_paste(json).await;
+        let response = self.request_create_paste(json);
 
         match response.status_code {
             200 | 201 | 204 => {
@@ -141,29 +139,22 @@ impl AuthClient {
                 Ok(Paste {
                     created_at: parse_date(paste_result["created_at"].as_str().unwrap()),
                     expires: first_paste.expires,
-                    files: files,
+                    files,
                     id: paste_result["id"].as_str().unwrap().to_string(),
                 })
             }
-            status_code => Err(MystbinError {
-                code: status_code,
-                ..Default::default()
-            }),
+            status_code => Err(MystbinError { code: status_code }),
         }
     }
 
     /// Get a paste.
-    pub async fn get_paste<F>(&self, paste: F) -> Result<Paste, MystbinError>
+    pub fn get_paste<F>(&self, paste: F) -> Result<Paste, MystbinError>
     where
         F: FnOnce(&mut GetPasteBuilder) -> &mut GetPasteBuilder,
     {
         let mut builder = GetPasteBuilder::default();
         let data = paste(&mut builder);
-        let json = json!({
-            "paste_id": data.id,
-            "password": data.password
-        });
-        let response = self.request_get_paste(json).await;
+        let response = self.request_get_paste(data.id.clone(), data.password.clone());
         match response.status_code {
             200 => {
                 let paste_result = response.json.unwrap();
@@ -175,7 +166,7 @@ impl AuthClient {
                 let files = paste_result["files"]
                     .as_array()
                     .unwrap()
-                    .into_iter()
+                    .iter()
                     .map(|x| File {
                         filename: x.get("filename").unwrap().to_string(),
                         content: x.get("content").unwrap().to_string(),
@@ -183,38 +174,33 @@ impl AuthClient {
                     .collect::<Vec<File>>();
                 Ok(Paste {
                     created_at: parse_date(paste_result["created_at"].as_str().unwrap()),
-                    expires: expires,
-                    files: files,
+                    expires,
+                    files,
                     id: data.id.clone(),
                 })
             }
-            status_code => Err(MystbinError {
-                code: status_code,
-                ..Default::default()
-            }),
+            status_code => Err(MystbinError { code: status_code }),
         }
     }
 
     /// Delete a paste.
-    pub async fn delete_paste(&self, paste_id: &str) -> Result<DeleteResult, MystbinError> {
-        let response = self.request_delete_paste(paste_id).await;
+    pub fn delete_paste(&self, paste_id: &str) -> Result<DeleteResult, MystbinError> {
+        let response = self.request_delete_paste(paste_id);
         match response.status_code {
             200 => Ok(DeleteResult {
                 succeeded: Some(vec![paste_id.to_string()]),
                 ..Default::default()
             }),
-            _ => {
-                return Err(MystbinError {
-                    code: response.status_code,
-                });
-            }
+            _ => Err(MystbinError {
+                code: response.status_code,
+            }),
         }
     }
 
     /// Delete pastes.
-    pub async fn delete_pastes(&self, paste_ids: Vec<&str>) -> Result<DeleteResult, MystbinError> {
+    pub fn delete_pastes(&self, paste_ids: Vec<&str>) -> Result<DeleteResult, MystbinError> {
         let json = json!({ "pastes": paste_ids });
-        let response = self.request_delete_pastes(json).await;
+        let response = self.request_delete_pastes(json);
         match response.status_code {
             200 => {
                 let data = response.json.unwrap();
@@ -223,7 +209,7 @@ impl AuthClient {
                         data["succeeded"]
                             .as_array()
                             .unwrap()
-                            .into_iter()
+                            .iter()
                             .map(|p| p.to_string())
                             .collect(),
                     ),
@@ -231,7 +217,7 @@ impl AuthClient {
                         data["failed"]
                             .as_array()
                             .unwrap()
-                            .into_iter()
+                            .iter()
                             .map(|p| p.to_string())
                             .collect(),
                     ),
@@ -239,13 +225,12 @@ impl AuthClient {
             }
             _ => Err(MystbinError {
                 code: response.status_code,
-                ..Default::default()
             }),
         }
     }
 
     /// Get the authenticated user pastes.
-    pub async fn get_user_pastes<F>(&self, options: F) -> Result<Vec<UserPaste>, MystbinError>
+    pub fn get_user_pastes<F>(&self, options: F) -> Result<Vec<UserPaste>, MystbinError>
     where
         F: FnOnce(&mut UserPastesOptions) -> &mut UserPastesOptions,
     {
@@ -255,7 +240,7 @@ impl AuthClient {
             "limit": data.limit,
             "page": data.page
         });
-        let response = self.request_get_user_pastes(json).await;
+        let response = self.request_get_user_pastes(json);
         match response.status_code {
             200 => {
                 let results = response.json.unwrap();
@@ -267,7 +252,7 @@ impl AuthClient {
                         let expires = result["expires"].as_str().map(parse_date);
                         UserPaste {
                             created_at: parse_date(result["created_at"].as_str().unwrap()),
-                            expires: expires,
+                            expires,
                             id: result["id"].as_str().unwrap().to_string(),
                         }
                     })
@@ -276,40 +261,37 @@ impl AuthClient {
             }
             _ => Err(MystbinError {
                 code: response.status_code,
-                ..Default::default()
             }),
         }
     }
 
     /// Add a paste to the authenticated user's bookmark.
-    pub async fn create_bookmark(&self, paste_id: &str) -> Result<(), MystbinError> {
+    pub fn create_bookmark(&self, paste_id: &str) -> Result<(), MystbinError> {
         let json = json!({ "paste_id": paste_id });
-        let response = self.request_create_bookmark(json).await;
+        let response = self.request_create_bookmark(json);
         match response.status_code {
             201 => Ok(()),
             _ => Err(MystbinError {
                 code: response.status_code,
-                ..Default::default()
             }),
         }
     }
 
     /// Delete a paste from the authenticated user's bookmark.
-    pub async fn delete_bookmark(&self, paste_id: &str) -> Result<(), MystbinError> {
+    pub fn delete_bookmark(&self, paste_id: &str) -> Result<(), MystbinError> {
         let json = json!({ "paste_id": paste_id });
-        let response = self.request_delete_bookmark(json).await;
+        let response = self.request_delete_bookmark(json);
         match response.status_code {
             204 => Ok(()),
             _ => Err(MystbinError {
                 code: response.status_code,
-                ..Default::default()
             }),
         }
     }
 
     /// Get the authenticated user's bookmarks.
-    pub async fn get_user_bookmarks(&self) -> Result<Vec<UserPaste>, MystbinError> {
-        let response = self.request_get_user_bookmarks().await;
+    pub fn get_user_bookmarks(&self) -> Result<Vec<UserPaste>, MystbinError> {
+        let response = self.request_get_user_bookmarks();
         match response.status_code {
             200 => {
                 let data = response.json.unwrap();
@@ -321,7 +303,7 @@ impl AuthClient {
                         let expires = paste["expires"].as_str().map(parse_date);
                         UserPaste {
                             created_at: parse_date(paste["created_at"].as_str().unwrap()),
-                            expires: expires,
+                            expires,
                             id: paste["id"].as_str().unwrap().to_string(),
                         }
                     })
@@ -330,72 +312,78 @@ impl AuthClient {
             }
             _ => Err(MystbinError {
                 code: response.status_code,
-                ..Default::default()
             }),
         }
     }
 }
 
-#[async_trait]
-impl AuthClientPaste for AuthClient {
-    async fn request_create_paste(&self, json: Value) -> Response {
-        self.request("PUT", PASTE_ENDPOINT, json).await
+impl SyncAuthClientPaste for SyncAuthClient {
+    fn request_create_paste(&self, json: Value) -> MyustResponse {
+        self.request("PUT", PASTE_ENDPOINT, json)
     }
 
-    async fn request_delete_paste(&self, paste_id: &str) -> Response {
+    fn request_delete_paste(&self, paste_id: &str) -> MyustResponse {
         self.request(
             "DELETE",
             &format!("{}/{}", PASTE_ENDPOINT, paste_id),
             json!({}),
         )
-        .await
     }
 
-    async fn request_delete_pastes(&self, json: Value) -> Response {
-        self.request("DELETE", PASTE_ENDPOINT, json).await
+    fn request_delete_pastes(&self, json: Value) -> MyustResponse {
+        self.request("DELETE", PASTE_ENDPOINT, json)
     }
 
-    async fn request_get_paste(&self, json: Value) -> Response {
-        self.request("GET", PASTE_ENDPOINT, json).await
+    fn request_get_paste(&self, paste_id: String, password: Option<String>) -> MyustResponse {
+        let url = if password.is_some() {
+            format!(
+                "{}/{}?password={}",
+                PASTE_ENDPOINT,
+                paste_id,
+                password.unwrap()
+            )
+        } else {
+            format!("{}/{}", PASTE_ENDPOINT, paste_id)
+        };
+        self.request("GET", &url, json!({}))
     }
 
-    async fn request_get_user_pastes(&self, json: Value) -> Response {
-        self.request("GET", USER_PASTES_ENDPOINT, json).await
-    }
-}
-
-#[async_trait]
-impl AuthClientBookmark for AuthClient {
-    async fn request_create_bookmark(&self, json: Value) -> Response {
-        self.request("PUT", BOOKMARK_ENDPOINT, json).await
-    }
-
-    async fn request_delete_bookmark(&self, json: Value) -> Response {
-        self.request("DELETE", BOOKMARK_ENDPOINT, json).await
-    }
-
-    async fn request_get_user_bookmarks(&self) -> Response {
-        self.request("GET", BOOKMARK_ENDPOINT, json!({})).await
+    fn request_get_user_pastes(&self, json: Value) -> MyustResponse {
+        self.request("GET", USER_PASTES_ENDPOINT, json)
     }
 }
 
-/// A client to interact with the API.
+impl SyncAuthClientBookmark for SyncAuthClient {
+    fn request_create_bookmark(&self, json: Value) -> MyustResponse {
+        self.request("PUT", BOOKMARK_ENDPOINT, json)
+    }
+
+    fn request_delete_bookmark(&self, json: Value) -> MyustResponse {
+        self.request("DELETE", BOOKMARK_ENDPOINT, json)
+    }
+
+    fn request_get_user_bookmarks(&self) -> MyustResponse {
+        self.request("GET", BOOKMARK_ENDPOINT, json!({}))
+    }
+}
+
+/// A synchronous client to interact with the API.
 ///
 /// Use this if you're not doing anything users-related endpoints.
 #[derive(Default)]
-pub struct Client {
-    inner: reqwest::Client,
+pub struct SyncClient {
+    inner: reqwest::blocking::Client,
 }
 
-impl Client {
+impl SyncClient {
     /// Instantiate a new Client.
     pub fn new() -> Self {
-        Client {
-            inner: reqwest::Client::new(),
+        SyncClient {
+            inner: reqwest::blocking::Client::new(),
         }
     }
 
-    async fn request(&self, method: &str, url: &str, json: Value) -> Response {
+    fn request(&self, method: &str, url: &str, json: Value) -> MyustResponse {
         let methods = HashMap::from([
             ("GET", Method::GET),
             ("PUT", Method::PUT),
@@ -406,18 +394,17 @@ impl Client {
             .request(methods[method].clone(), url.clone())
             .json(&json)
             .send()
-            .await
             .unwrap();
         let status_code = response.status().as_u16();
-        let json_value = response.json::<Value>().await.ok();
-        Response {
+        let json_value = response.json::<Value>().ok();
+        MyustResponse {
             json: json_value,
-            status_code: status_code,
+            status_code,
         }
     }
 
     /// Create a paste.
-    pub async fn create_paste<F>(&self, paste: F) -> Result<Paste, MystbinError>
+    pub fn create_paste<F>(&self, paste: F) -> Result<Paste, MystbinError>
     where
         F: FnOnce(&mut PasteBuilder) -> &mut PasteBuilder,
     {
@@ -435,7 +422,7 @@ impl Client {
             "password": data.password,
             "expires": expires
         });
-        let response = self.request_create_paste(json).await;
+        let response = self.request_create_paste(json);
 
         match response.status_code {
             200 | 201 | 204 => {
@@ -443,14 +430,11 @@ impl Client {
                 Ok(Paste {
                     created_at: parse_date(paste_result["created_at"].as_str().unwrap()),
                     expires: data.expires,
-                    files: files,
+                    files,
                     id: paste_result["id"].as_str().unwrap().to_string(),
                 })
             }
-            status_code => Err(MystbinError {
-                code: status_code,
-                ..Default::default()
-            }),
+            status_code => Err(MystbinError { code: status_code }),
         }
     }
 
@@ -458,7 +442,7 @@ impl Client {
     ///
     /// If you want to provide `expires` and `password`,
     /// put it in the first file.
-    pub async fn create_multifile_paste<F>(&self, pastes: F) -> Result<Paste, MystbinError>
+    pub fn create_multifile_paste<F>(&self, pastes: F) -> Result<Paste, MystbinError>
     where
         F: FnOnce(&mut PastesBuilder) -> &mut PastesBuilder,
     {
@@ -479,7 +463,7 @@ impl Client {
             "password": first_paste.password,
             "expires": expires
         });
-        let response = self.request_create_paste(json).await;
+        let response = self.request_create_paste(json);
 
         match response.status_code {
             200 | 201 | 204 => {
@@ -487,29 +471,22 @@ impl Client {
                 Ok(Paste {
                     created_at: parse_date(paste_result["created_at"].as_str().unwrap()),
                     expires: first_paste.expires,
-                    files: files,
+                    files,
                     id: paste_result["id"].as_str().unwrap().to_string(),
                 })
             }
-            status_code => Err(MystbinError {
-                code: status_code,
-                ..Default::default()
-            }),
+            status_code => Err(MystbinError { code: status_code }),
         }
     }
 
     /// Get a paste.
-    pub async fn get_paste<F>(&self, paste: F) -> Result<Paste, MystbinError>
+    pub fn get_paste<F>(&self, paste: F) -> Result<Paste, MystbinError>
     where
         F: FnOnce(&mut GetPasteBuilder) -> &mut GetPasteBuilder,
     {
         let mut builder = GetPasteBuilder::default();
         let data = paste(&mut builder);
-        let json = json!({
-            "paste_id": data.id,
-            "password": data.password
-        });
-        let response = self.request_get_paste(json).await;
+        let response = self.request_get_paste(data.id.clone(), data.password.clone());
         match response.status_code {
             200 => {
                 let paste_result = response.json.unwrap();
@@ -521,7 +498,7 @@ impl Client {
                 let files = paste_result["files"]
                     .as_array()
                     .unwrap()
-                    .into_iter()
+                    .iter()
                     .map(|x| File {
                         filename: x.get("filename").unwrap().to_string(),
                         content: x.get("content").unwrap().to_string(),
@@ -529,26 +506,32 @@ impl Client {
                     .collect::<Vec<File>>();
                 Ok(Paste {
                     created_at: parse_date(paste_result["created_at"].as_str().unwrap()),
-                    expires: expires,
-                    files: files,
+                    expires,
+                    files,
                     id: data.id.clone(),
                 })
             }
-            status_code => Err(MystbinError {
-                code: status_code,
-                ..Default::default()
-            }),
+            status_code => Err(MystbinError { code: status_code }),
         }
     }
 }
 
-#[async_trait]
-impl ClientPaste for Client {
-    async fn request_create_paste(&self, json: Value) -> Response {
-        self.request("PUT", PASTE_ENDPOINT, json).await
+impl SyncClientPaste for SyncClient {
+    fn request_create_paste(&self, json: Value) -> MyustResponse {
+        self.request("PUT", PASTE_ENDPOINT, json)
     }
 
-    async fn request_get_paste(&self, json: Value) -> Response {
-        self.request("GET", PASTE_ENDPOINT, json).await
+    fn request_get_paste(&self, paste_id: String, password: Option<String>) -> MyustResponse {
+        let url = if password.is_some() {
+            format!(
+                "{}/{}?password={}",
+                PASTE_ENDPOINT,
+                paste_id,
+                password.unwrap()
+            )
+        } else {
+            format!("{}/{}", PASTE_ENDPOINT, paste_id)
+        };
+        self.request("GET", &url, json!({}))
     }
 }

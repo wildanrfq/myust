@@ -7,14 +7,14 @@ pub(super) mod response {
     use serde_json::Value;
 
     #[derive(Debug)]
-    pub struct Response {
+    pub struct MyustResponse {
         pub json: Option<Value>,
         pub status_code: u16,
     }
 }
 
 /// An error received from the API.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct MystbinError {
     pub code: u16,
 }
