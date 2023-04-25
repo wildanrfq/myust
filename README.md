@@ -39,7 +39,7 @@ API token.
 
  ```toml
  [dependencies]
- myust = { version = "0.1", features = ["sync"] }
+ myust = { version = "1.0", features = ["sync"] }
  ```
 
  ## Usage Examples
