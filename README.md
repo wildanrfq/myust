@@ -6,9 +6,9 @@
 
  ## Introduction
 
- `myust` is a rich and hybrid Rust wrapper for the mystb.in API that aims for user-flexibility.
+ myust is a rich and hybrid Rust wrapper for the mystb.in API that aims for user-flexibility.
  
- `myust` supports hybrid clients:
+ myust supports hybrid clients:
 
  - Asynchronous: Client and AuthClient.
  - Synchronous: SyncClient and SyncAuthClient.
