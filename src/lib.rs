@@ -132,6 +132,7 @@ mod utils;
 pub use r#async::{AuthClient, Client};
 pub use structs::*;
 
+#[cfg(feature = "sync")]
 pub mod sync;
 #[cfg(feature = "sync")]
 pub use sync::{SyncAuthClient, SyncClient};
