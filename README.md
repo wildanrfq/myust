@@ -1,8 +1,8 @@
- # A rich and hybrid [mystb.in](https://mystb.in) API wrapper for Rust 🦀
+ # **myust**: 📋 => 🌐 => 🦀
  
-[![crates.io](https://img.shields.io/crates/v/myust.svg)](https://crates.io/crates/myust)
-[![Documentation](https://docs.rs/myust/badge.svg)](https://docs.rs/myust)
-[![MIT](https://img.shields.io/crates/l/myust.svg)](./LICENSE)
+[![crates.io][crates-io-badge]][crates-io]
+[![Documentation][docs-badge]][docs]
+[![MIT][license-badge]](./LICENSE)
 
  ## Introduction
 
@@ -10,19 +10,19 @@
  
  myust supports hybrid clients:
 
- - Asynchronous: Client and AuthClient.
- - Synchronous: SyncClient and SyncAuthClient.
+ - Asynchronous: [Client][Client] and [AuthClient][AuthClient].
+ - Synchronous: [SyncClient][SyncClient] and [SyncAuthClient][SyncAuthClient].
 
- **⚠️ Synchronous clients are only available on the `sync` feature.**
+ **⚠️ Synchronous clients are only available on the [`sync`][sync] feature.**
  
  ## Which one do I use?
  
- It depends on your usecase, if you're not doing anything with anything users-related endpoints, use Client. It only wraps non-users endpoints.
+ It depends on your usecase, if you're not doing anything with anything users-related endpoints, use [Client]. It only wraps non-users endpoints.
  
- Otherwise, use AuthClient. It wraps both users and non-users endpoints. And the benefit of using AuthClient is mystb.in gives you more ratelimit credits for authorized requests.
+ Otherwise, use [AuthClient]. It wraps both users and non-users endpoints. And the benefit of using [AuthClient][AuthClient] is mystb.in gives you more ratelimit credits for authorized requests.
 
-To use AuthClient, you must have a mystb.in API
-token to authenticate you to the API. Log into [mystb.in](https://mystb.in) to get your own
+To use [AuthClient][AuthClient], you must have a [mystb.in][mystb.in] API
+token to authenticate you to the API. Log into [mystb.in][mystb.in] to get your own
 API token.
 
  ## Installation
@@ -35,7 +35,7 @@ API token.
  tokio = "1.27.0"
  ```
 
- If you want to use synchronous clients, add the `sync` feature.
+ If you want to use synchronous clients, add the [`sync`][sync] feature.
 
  ```toml
  [dependencies]
@@ -72,7 +72,7 @@ async fn main() {
     }
 }
 ```
-Synchronously creating a multifile paste with a password (you must have the `sync` feature enabled):
+Synchronously creating a multifile paste with a password (you must have the [`sync`][sync] feature enabled):
 ```rust
 use myust::SyncClient;
 
@@ -114,4 +114,16 @@ You can check for another example snippets in [the test file](tests/test.rs).
 
 ## Help & Contributing
 
-If you need any help regarding `myust`, feel free to open an issue about your problem, and feel free to make a pull request for bugfix, code improvements, etc.
+If you need any help regarding myust, feel free to open an issue about your problem, and feel free to make a pull request for bugfix, code improvements, etc.
+
+[Client]: https://docs.rs/myust/latest/myust/struct.Client.html
+[AuthClient]: https://docs.rs/myust/latest/myust/struct.AuthClient.html
+[SyncClient]: https://docs.rs/myust/latest/myust/sync/struct.SyncClient.html
+[SyncAuthClient]: https://docs.rs/myust/latest/myust/sync/struct.SyncClient.html
+[sync]: https://docs.rs/myust/latest/myust/sync/index.html
+[crates-io-badge]: https://img.shields.io/crates/v/myust.svg
+[crates-io]: https://crates.io/crates/myust
+[docs-badge]: https://docs.rs/myust/badge.svg
+[docs]: https://docs.rs/myust
+[license-badge]: https://img.shields.io/crates/l/myust.svg
+[mystb.in]: https://mystb.in
