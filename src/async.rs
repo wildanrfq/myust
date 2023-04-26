@@ -20,7 +20,7 @@ pub struct AuthClient {
 }
 
 impl AuthClient {
-    async fn check_token(client: reqwest::Client, token: &str) -> u16 {
+    async fn check_token(client: reqwest::Client, token: String) -> u16 {
         client
             .get(SELF_ENDPOINT)
             .header("Authorization", format!("Bearer {}", token))
@@ -58,13 +58,14 @@ impl AuthClient {
     /// Login to [mystb.in](https://mystb.in) to get your API token.
     ///
     /// Panics if the provided token is invalid.
-    pub async fn new(token: &str) -> Self {
+    pub async fn new(token: impl Into<String>) -> Self {
+        let token_str = token.into();
         let client = reqwest::Client::new();
-        let code = Self::check_token(client.clone(), token).await;
+        let code = Self::check_token(client.clone(), token_str.clone()).await;
         match code {
             200 => AuthClient {
                 inner: client,
-                token: format!("Bearer {}", token),
+                token: format!("Bearer {}", token_str),
             },
             _ => panic!("The provided token is invalid."),
         }

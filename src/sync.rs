@@ -24,7 +24,7 @@ pub struct SyncAuthClient {
 }
 
 impl SyncAuthClient {
-    fn check_token(client: reqwest::blocking::Client, token: &str) -> u16 {
+    fn check_token(client: reqwest::blocking::Client, token: String) -> u16 {
         client
             .get(SELF_ENDPOINT)
             .header("Authorization", format!("Bearer {}", token))
@@ -60,13 +60,14 @@ impl SyncAuthClient {
     /// Login to [mystb.in](https://mystb.in) to get your API token.
     ///
     /// Panics if the provided token is invalid.
-    pub fn new(token: &str) -> Self {
+    pub fn new(token: impl Into<String>) -> Self {
         let client = reqwest::blocking::Client::new();
-        let code = Self::check_token(client.clone(), token);
+        let token_str = token.into();
+        let code = Self::check_token(client.clone(), token_str.clone());
         match code {
             200 => SyncAuthClient {
                 inner: client,
-                token: format!("Bearer {}", token),
+                token: format!("Bearer {}", token_str),
             },
             _ => panic!("The provided token is invalid."),
         }
