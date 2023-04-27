@@ -1,4 +1,4 @@
- # **myust**: 📋 => 🌐 => 🦀
+ # **myust**: 📋=>🌐=>🦀
  
 [![crates.io][crates-io-badge]][crates-io]
 [![Documentation][docs-badge]][docs]
@@ -22,9 +22,9 @@ You can authenticate with the API using the `auth` method with your
 ```rust
 use myust::{Client, SyncClient};
 
-let client = CLient::new().auth("YOUR_MYSTBIN_TOKEN").await;
+let client = Client::new().auth("YOUR_MYSTBIN_TOKEN").await;
 // or using synchronous client,
-let client = SyncCLient::new().auth("YOUR_MYSTBIN_TOKEN");
+let client = SyncClient::new().auth("YOUR_MYSTBIN_TOKEN");
 ```
 
 It will panic if the provided token is invalid.
