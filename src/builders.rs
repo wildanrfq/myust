@@ -1,6 +1,6 @@
 use std::mem::take;
 
-use chrono::{DateTime, FixedOffset};
+use crate::Expiry;
 
 /// The builder to get a paste.
 #[derive(Debug, Default)]
@@ -27,7 +27,7 @@ impl GetPasteBuilder {
 pub struct PasteBuilder {
     pub filename: String,
     pub content: String,
-    pub expires: Option<DateTime<FixedOffset>>,
+    pub expires: Option<Expiry>,
     pub password: Option<String>,
 }
 
@@ -45,7 +45,7 @@ impl PasteBuilder {
     }
 
     /// (optional) The expiration date for the paste.
-    pub fn expires(&mut self, expires: DateTime<FixedOffset>) -> &mut Self {
+    pub fn expires(&mut self, expires: Expiry) -> &mut Self {
         self.expires = Some(expires);
         self
     }
@@ -83,16 +83,19 @@ pub struct UserPastesOptions {
 }
 
 impl UserPastesOptions {
+    /// The limit of pastes to be shown. Defaults to 50.
     pub fn limit(&mut self, limit: i32) -> &mut Self {
         self.limit = limit;
         self
     }
 
+    /// The page number to be shown. Defaults to 1.
     pub fn page(&mut self, page: i32) -> &mut Self {
         self.page = page;
         self
     }
 }
+
 impl Default for UserPastesOptions {
     fn default() -> Self {
         UserPastesOptions { limit: 50, page: 1 }

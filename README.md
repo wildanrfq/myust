@@ -10,20 +10,24 @@
  
  myust supports hybrid clients:
 
- - Asynchronous: [Client][Client] and [AuthClient][AuthClient].
- - Synchronous: [SyncClient][SyncClient] and [SyncAuthClient][SyncAuthClient].
+- [Client] for asynchronous, and [SyncClient] for synchronous.
 
- **⚠️ Synchronous clients are only available on the [`sync`][sync] feature.**
- 
- ## Which one do I use?
- 
- It depends on your usecase, if you're not doing anything with anything users-related endpoints, use [Client]. It only wraps non-users endpoints.
- 
- Otherwise, use [AuthClient]. It wraps both users and non-users endpoints. And the benefit of using [AuthClient][AuthClient] is mystb.in gives you more ratelimit credits for authorized requests.
+**⚠️ Synchronous clients are only available on the [sync] feature.**
 
-To use [AuthClient][AuthClient], you must have a [mystb.in][mystb.in] API
-token to authenticate you to the API. Log into [mystb.in][mystb.in] to get your own
-API token.
+## Authentication
+
+You can authenticate with the API using the `auth` method with your
+[mystb.in], example:
+
+```rust
+use myust::{Client, SyncClient};
+
+let client = CLient::new().auth("YOUR_MYSTBIN_TOKEN").await;
+// or using synchronous client,
+let client = SyncCLient::new().auth("YOUR_MYSTBIN_TOKEN");
+```
+
+It will panic if the provided token is invalid.
 
  ## Installation
 
@@ -32,7 +36,7 @@ API token.
  ```toml
  [dependencies]
  myust = "1.0"
- tokio = "1.27.0"
+ tokio = "1.0"
  ```
 
  If you want to use synchronous clients, add the [`sync`][sync] feature.
@@ -46,13 +50,15 @@ API token.
 
  Asynchronously creating a paste with tomorrow expiration date, with error handling:
  ```rust
- use chrono::{Days, Utc};
- use myust::Client;
+ use myust::{Client, Expiry};
 
 #[tokio::main]
 async fn main() {
     let client = Client::new();
-    let tomorrow = Utc::now().checked_add_days(Days::new(1)).unwrap().into();
+    let tomorrow = Expiry {
+        days: 1,
+        ..Default::default()
+    }; // other fields default to 0
     let result = client
         .create_paste(|p| {
             p.filename("myust.txt")
@@ -63,9 +69,10 @@ async fn main() {
     match result {
         Ok(_) => {
             let paste = result.unwrap();
+            println!("{paste:#?}");
             let url = format!("https://mystb.in/{}", paste.id);
             println!("Result: {}", url)
-        },
+        }
         Err(_) => {
             println!("Error code: {}", result.unwrap_err().code)
         }
@@ -99,7 +106,9 @@ use myust::AuthClient;
 
 #[tokio::main]
 async fn main() {
-    let client = AuthClient::new("YOUR_MYSTBIN_TOKEN").await;
+    let client = AuthClient::new()
+        .auth(std::env::var("MYSTBIN_TOKEN").unwrap())
+        .await;
     let result = client.delete_paste("EquipmentMovingExpensive").await; // The paste ID to delete
     match result {
         Ok(_) => println!("Successfully deleted the paste."),
@@ -110,16 +119,14 @@ async fn main() {
 }
 ```
 
-You can check for another example snippets in [the test file](tests/test.rs).
+You can check for another example snippets in [the test folder](tests/).
 
 ## Help & Contributing
 
-If you need any help regarding myust, feel free to open an issue about your problem, and feel free to make a pull request for bugfix, code improvements, etc.
+If you need any help regarding myust, feel free to open an issue about your problem, and feel free to make a pull request for code improvements, bugfixing, etc.
 
 [Client]: https://docs.rs/myust/latest/myust/struct.Client.html
-[AuthClient]: https://docs.rs/myust/latest/myust/struct.AuthClient.html
 [SyncClient]: https://docs.rs/myust/latest/myust/sync/struct.SyncClient.html
-[SyncAuthClient]: https://docs.rs/myust/latest/myust/sync/struct.SyncClient.html
 [sync]: https://docs.rs/myust/latest/myust/sync/index.html
 [crates-io-badge]: https://img.shields.io/crates/v/myust.svg
 [crates-io]: https://crates.io/crates/myust
