@@ -79,6 +79,26 @@ async fn main() {
     }
 }
 ```
+
+Asynchronously deleting a paste (you must own the paste):
+```rust
+use myust::AuthClient;
+
+#[tokio::main]
+async fn main() {
+    let client = AuthClient::new()
+        .auth(std::env::var("MYSTBIN_TOKEN").unwrap())
+        .await;
+    let result = client.delete_paste("EquipmentMovingExpensive").await; // The paste ID to delete
+    match result {
+        Ok(_) => println!("Successfully deleted the paste."),
+        Err(_) => {
+            println!("Error code: {}", result.unwrap_err().code)
+        }
+    }
+}
+```
+
 Synchronously creating a multifile paste with a password (you must have the [`sync`][sync] feature enabled):
 ```rust
 use myust::SyncClient;
@@ -97,25 +117,6 @@ fn main() {
         .unwrap();
     let url = format!("https://mystb.in/{}", paste.id);
     println!("Result: {}", url)
-}
-```
-
-Asynchronously deleting a paste (you must own the paste):
-```rust
-use myust::AuthClient;
-
-#[tokio::main]
-async fn main() {
-    let client = AuthClient::new()
-        .auth(std::env::var("MYSTBIN_TOKEN").unwrap())
-        .await;
-    let result = client.delete_paste("EquipmentMovingExpensive").await; // The paste ID to delete
-    match result {
-        Ok(_) => println!("Successfully deleted the paste."),
-        Err(_) => {
-            println!("Error code: {}", result.unwrap_err().code)
-        }
-    }
 }
 ```
 
