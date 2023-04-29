@@ -101,7 +101,6 @@ impl SyncClient {
         let mut map = Map::new();
         map.insert("files".to_string(), json!(files));
         map.insert("password".to_string(), json!(data.password));
-        println!("{:#?}", data.expires);
         if let Some(expiry) = &data.expires {
             if expiry.valid() {
                 if expiry.is_default() {
