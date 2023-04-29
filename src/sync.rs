@@ -43,7 +43,7 @@ impl SyncClient {
     }
 
     /// Authenticate to mystb.in's API.
-    /// 
+    ///
     /// This method will panic if the provided token is invalid.
     pub fn auth(mut self, token: impl Into<String>) -> Self {
         let token_str = token.into();
@@ -127,15 +127,22 @@ impl SyncClient {
                 })
             }
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }
@@ -188,15 +195,22 @@ impl SyncClient {
                 })
             }
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }
@@ -229,15 +243,22 @@ impl SyncClient {
                 })
             }
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }

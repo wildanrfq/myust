@@ -127,15 +127,22 @@ impl Client {
                 })
             }
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }
@@ -187,15 +194,22 @@ impl Client {
                 })
             }
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }
@@ -230,15 +244,22 @@ impl Client {
                 })
             }
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }
@@ -252,15 +273,22 @@ impl Client {
                 ..Default::default()
             }),
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }
@@ -292,15 +320,22 @@ impl Client {
                 })
             }
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }
@@ -333,15 +368,22 @@ impl Client {
                 Ok(pastes)
             }
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }
@@ -353,15 +395,22 @@ impl Client {
         match response.status_code {
             201 => Ok(()),
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }
@@ -373,15 +422,22 @@ impl Client {
         match response.status_code {
             204 => Ok(()),
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }
@@ -405,15 +461,22 @@ impl Client {
                 Ok(bookmarks)
             }
             _ => {
-                let data = response.json.unwrap();
-                Err(MystbinError {
-                    code: response.status_code,
-                    error: data["error"].as_str().map(|s| s.to_string()),
-                    notice: data["notice"].as_str().map(|s| s.to_string()),
-                    detail: data["detail"]
-                        .as_object()
-                        .map(|m| m.clone().into_iter().collect()),
-                })
+                let json = response.json;
+                if let Some(data) = json {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        error: data["error"].as_str().map(|s| s.to_string()),
+                        notice: data["notice"].as_str().map(|s| s.to_string()),
+                        detail: data["detail"]
+                            .as_object()
+                            .map(|m| m.clone().into_iter().collect()),
+                    })
+                } else {
+                    Err(MystbinError {
+                        code: response.status_code,
+                        ..Default::default()
+                    })
+                }
             }
         }
     }

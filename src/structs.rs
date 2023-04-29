@@ -16,6 +16,19 @@ pub(super) mod response {
     }
 }
 
+/// An error received from the API.
+#[derive(Debug, Default)]
+pub struct MystbinError {
+    /// The status code.
+    pub code: u16,
+    /// The error message, if any.
+    pub error: Option<String>,
+    /// The notice message, if any.
+    pub notice: Option<String>,
+    /// The detail of the error, if any.
+    pub detail: Option<Value>,
+}
+
 /// The paste's expiration time.
 ///
 /// Examples:
@@ -86,19 +99,6 @@ impl Expiry {
         let form = humantime::format_rfc3339(self.add()).to_string();
         form.replace("00Z", "+00:00")
     }
-}
-
-/// An error received from the API.
-#[derive(Debug)]
-pub struct MystbinError {
-    /// The status code.
-    pub code: u16,
-    /// The error message, if any.
-    pub error: Option<String>,
-    /// The notice message, if any.
-    pub notice: Option<String>,
-    /// The detail of the error, if any.
-    pub detail: Option<Value>,
 }
 
 /// The base file.
