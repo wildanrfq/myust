@@ -17,7 +17,7 @@ use serde_json::{json, Map, Value};
 /// A synchronous client to interact with the API.
 ///
 /// Use this if you're not doing anything users-related endpoints.
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct SyncClient {
     inner: reqwest::blocking::Client,
     token: Option<String>,
