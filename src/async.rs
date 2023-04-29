@@ -9,7 +9,7 @@ use crate::{
 
 use async_trait::async_trait;
 use reqwest::Method;
-use serde_json::{json, Value};
+use serde_json::{json, Map, Value};
 
 /// A client to interact with the API.
 ///
@@ -48,7 +48,7 @@ impl Client {
                 self.token = Some(format!("Bearer {}", token_str));
                 self
             }
-            _ => panic!("The provided token is invalid."),
+            _ => panic!("the provided token is invalid"),
         }
     }
 
@@ -91,16 +91,22 @@ impl Client {
             ..Default::default()
         };
         let data = paste(&mut builder);
-        let expires = data.expires.as_ref().map(|dt| dt.to_rfc3339());
         let files = vec![File {
             filename: data.filename.to_string(),
             content: data.content.to_string(),
         }];
-        let json = json!({
-            "files": files,
-            "password": data.password,
-            "expires": expires
-        });
+        let mut map = Map::new();
+        map.insert("files".to_string(), json!(files));
+        map.insert("password".to_string(), json!(data.password));
+        if let Some(expiry) = &data.expires {
+            if expiry.valid() {
+                map.insert("expires".to_string(), json!(expiry.to_rfc3339()));
+            } else {
+                let invalid = expiry.invalid_field();
+                panic!("{} can not be negative, value: {}", invalid.0, invalid.1)
+            }
+        };
+        let json = Value::Object(map);
         let response = self.request_create_paste(json).await;
 
         match response.status_code {
@@ -137,7 +143,6 @@ impl Client {
     {
         let mut builder = PastesBuilder::default();
         let data = &pastes(&mut builder).files;
-        let expires = data[0].expires.as_ref().map(|dt| dt.to_rfc3339());
         let first_paste = &data[0];
         let files = data
             .iter()
@@ -146,12 +151,18 @@ impl Client {
                 content: file.content.clone(),
             })
             .collect();
-
-        let json = json!({
-            "files": files,
-            "password": first_paste.password,
-            "expires": expires
-        });
+        let mut map = Map::new();
+        map.insert("files".to_string(), json!(files));
+        map.insert("password".to_string(), json!(first_paste.password));
+        if let Some(expiry) = &first_paste.expires {
+            if expiry.valid() {
+                map.insert("expires".to_string(), json!(expiry.to_rfc3339()));
+            } else {
+                let invalid = expiry.invalid_field();
+                panic!("{} can not be negative, value: {}", invalid.0, invalid.1)
+            }
+        };
+        let json = Value::Object(map);
         let response = self.request_create_paste(json).await;
 
         match response.status_code {

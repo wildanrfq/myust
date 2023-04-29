@@ -27,7 +27,7 @@ pub(super) mod response {
 /// - 1 hour, 20 minutes and 40 seconds:
 ///
 /// `Expiry { hours: 1, minutes: 20, seconds: 40, ..default::Default() }`
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize)]
 pub struct Expiry {
     /// The expiration days.
     pub days: i32,
@@ -53,6 +53,29 @@ impl Expiry {
             Some(new_time) => new_time,
             None => current_time, // handle overflow case
         }
+    }
+
+    fn to_vec(&self) -> Vec<(&str, i32)> {
+        vec![
+            ("days", self.days),
+            ("hours", self.hours),
+            ("minutes", self.minutes),
+            ("seconds", self.seconds),
+        ]
+    }
+
+    pub(crate) fn invalid_field(&self) -> (String, i32) {
+        let expiry_vec = self.to_vec();
+        for field in &expiry_vec {
+            if field.1 < 0 {
+                return (field.0.to_string(), field.1);
+            }
+        }
+        (expiry_vec[0].0.to_string(), expiry_vec[0].1)
+    }
+
+    pub(crate) fn valid(&self) -> bool {
+        self.days >= 0 || self.hours >= 0 || self.minutes >= 0 || self.seconds >= 0
     }
 
     pub(crate) fn to_rfc3339(&self) -> String {
