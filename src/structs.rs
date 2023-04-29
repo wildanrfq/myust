@@ -75,7 +75,11 @@ impl Expiry {
     }
 
     pub(crate) fn valid(&self) -> bool {
-        self.days >= 0 || self.hours >= 0 || self.minutes >= 0 || self.seconds >= 0
+        self.days >= 0 && self.hours >= 0 && self.minutes >= 0 && self.seconds >= 0
+    }
+
+    pub(crate) fn is_default(&self) -> bool {
+        *self == Self::default()
     }
 
     pub(crate) fn to_rfc3339(&self) -> String {

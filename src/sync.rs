@@ -42,6 +42,9 @@ impl SyncClient {
         }
     }
 
+    /// Authenticate to mystb.in's API.
+    /// 
+    /// This method will panic if the provided token is invalid.
     pub fn auth(mut self, token: impl Into<String>) -> Self {
         let token_str = token.into();
         let code = Self::check_token(self.inner.clone(), token_str.clone());
@@ -98,9 +101,14 @@ impl SyncClient {
         let mut map = Map::new();
         map.insert("files".to_string(), json!(files));
         map.insert("password".to_string(), json!(data.password));
+        println!("{:#?}", data.expires);
         if let Some(expiry) = &data.expires {
             if expiry.valid() {
-                map.insert("expires".to_string(), json!(expiry.to_rfc3339()));
+                if expiry.is_default() {
+                    map.insert("expires".to_string(), json!(None::<()>));
+                } else {
+                    map.insert("expires".to_string(), json!(expiry.to_rfc3339()));
+                }
             } else {
                 let invalid = expiry.invalid_field();
                 panic!("{} can not be negative, value: {}", invalid.0, invalid.1)
@@ -157,7 +165,11 @@ impl SyncClient {
         map.insert("password".to_string(), json!(first_paste.password));
         if let Some(expiry) = &first_paste.expires {
             if expiry.valid() {
-                map.insert("expires".to_string(), json!(expiry.to_rfc3339()));
+                if expiry.is_default() {
+                    map.insert("expires".to_string(), json!(None::<()>));
+                } else {
+                    map.insert("expires".to_string(), json!(expiry.to_rfc3339()));
+                }
             } else {
                 let invalid = expiry.invalid_field();
                 panic!("{} can not be negative, value: {}", invalid.0, invalid.1)
